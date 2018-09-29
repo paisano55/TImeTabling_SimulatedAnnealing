@@ -67,7 +67,7 @@ int checking(int src)
 	}
 	for (int i = 0; i < 5; i++)
 	{
-		for (int j = 0; chkTimeTable[i][j][0]!= 0 && chkTImeTable[i][j][1]!=0; j++)
+		for (int j = 0; ( chkTimeTable[i][j][0]!= 0 && chkTimeTable[i][j][0] != 0 ) && (chkTimeTable[i][j][1] != 0 && chkTimeTable[i][j][1] != 0); j++)
 		{
 			
 		}
