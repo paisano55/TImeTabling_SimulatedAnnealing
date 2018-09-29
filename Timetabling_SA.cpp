@@ -24,9 +24,10 @@ int main(void)
 		vector <int> student;
 		vector <int> teacher;
 	};
-	vector <subject> group;
+	vector <groupBase> group;
 	int L, looped, fit
 	double T = 100, dec;
+	srand(time(NULL));
 	initialize();
 	initTimeTable(); //create initial timetable
 	fitNow=fitness(0)
@@ -74,18 +75,18 @@ int checking(int src)
 	}
 }
 void search()
-{
+{	
 
 }
 int initTimeTable()
 {
-
+	 
 }
 void initialize()
 {
 	timeTable[0][7][0], timeTable[0][7][1] = -1;
 	timeTable[2][5][0], timeTable[2][5][1], timeTable[2][6][0], timeTable[2][6][1], timeTable[2][7][0], timeTable[2][7][1], timeTable[2][8][0], timeTable[2][8][1] = -1;
 	timeTable[4][5][0], timeTable[4][5][1], timeTable[4][6][0], timeTable[4][6][1], timeTable[4][7][0], timeTable[4][7][1] = -1;	
-	
+	timeTable[0][0][0]=
 
 }
