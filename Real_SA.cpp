@@ -25,7 +25,7 @@ typedef struct groupbase
 
 vector<groupBase> group;
 
-int DistCal(int dowi, int periodi, int dowf, int periodf)
+int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 전부먹통!
 {
 	int i, j, k, moving, temp;
 	int stuInfo;
@@ -225,8 +225,6 @@ int main()
 			timeTableSrc[i][j][1] = -1;
 		}
 	}
-	FILE *table;
-	table = fopen("C:\\Users\\김현민\\Desktop\\timetable.txt", "w")
 		for (int i = 0; i < 5; i++) // Random Tabling
 		{
 			while (1) {
