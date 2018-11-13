@@ -11,7 +11,8 @@ int timeTableSrc[5][9][2] // Save the code of Searched Group
 typedef struct subjectbase
 {
 	vector<int> student;
-	int teacher, subcode, floor, x, time, y;
+	int subcode, floor, x, time, y;
+	vector <int> teacher;
 }subjectBase;
 typedef struct groupbase
 {
@@ -19,6 +20,7 @@ typedef struct groupbase
 	int groupCode;
 	int maxTime;
 	int currentTime;
+	int grade;
 	vector<int> student;
 	vector<int> teacher;
 }groupBase;
@@ -32,7 +34,7 @@ int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 �
 	int howmansub, howmanstu, whichsmall;
 	int howmuctime[60] = { 0 };
 	int totaltime = 0;
-	vector<int> student_list;
+	vector<int> student_list; 
 	vector<int> iniclass_student;
 	vector<int> finclass_student;
 	struct position
@@ -195,6 +197,7 @@ int SrcDowTotDist() // SA 이웃해용 총 거리계산
 	}
 	return Dtotaltime;
 }
+int SrcFit
 
 
 int main()
@@ -213,6 +216,7 @@ int main()
 			{
 				(group[i].student).push_back(group[i].subject[j].student[k])
 			}
+			for (int k=0;)
 		}
 	}
 	for (int i = 0; i < 5; i++) // Initializing Timetable
@@ -277,7 +281,7 @@ int main()
 	}
 	printf("Greedy Initial Tabling Finished! \n");
 	double tem = 1, temDec = 0.8, tFin = 0.01;
-	int loop = 5000, looped, randDay1, randDay2, randPrd1, randPrd2, swap, srcDist, crtDist, distDiff;
+	int loop = 5000, looped, randDay1, randDay2, randPrd1, randPrd2, randGrd, swap, srcDist, crtDist, distDiff;
 	memcpy(timeTableSrc, timeTable, sizeof(timeTable));
 	for (; tem > tFin; tem *= temDec)
 	{
@@ -287,13 +291,14 @@ int main()
 			do
 			{
 				randDay1 = rand() % 5;
-				randPrd1 = rand() % 6;
+				randPrd1 = rand() % 9;
 				randDay2 = rand() % 5;
-				randPrd2 = rand() % 6;
+				randPrd2 = rand() % 9;
+				randGrd = rand() % 2;
 			} while (randDay1 != randDay2 || randPrd1 != randPrd2);
-			swap = timeTableSrc[randDay1][randPrd1];
-			timeTableSrc[randDay1][randPrd1] = timeTableSrc[randDay2][randPrd2];
-			timeTableSrc[randDay2][randPrd2] = swap;
+			swap = timeTableSrc[randDay1][randPrd1][randGrd];
+			timeTableSrc[randDay1][randPrd1][randGrd] = timeTableSrc[randDay2][randPrd2][randGrd];
+			timeTableSrc[randDay2][randPrd2][randGrd] = swap;
 			crtDist = DowTotDist();
 			srcDist = SrcDowTotDist();
 			distDiff = srcDist - crtDist;
@@ -310,6 +315,10 @@ int main()
 				{
 					memcpy(timeTable, timeTableSrc, sizeof(timeTableSrc));
 					continue;
+				}
+				else 
+				{
+					memcpy(timeTableSrc, timeTable, sizeof(timeTable));
 				}
 			}
 		}
