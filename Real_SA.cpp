@@ -13,6 +13,7 @@ typedef struct subjectbase
 	vector<int> student;
 	int subcode, floor, x, time, y;
 	vector <int> teacher;
+	bool sequent; // 연강 여부
 }subjectBase;
 typedef struct groupbase
 {
@@ -21,6 +22,7 @@ typedef struct groupbase
 	int maxTime;
 	int currentTime;
 	int grade;
+	bool sequentInc; // 연강 과목 포함 여부
 	vector<int> student;
 	vector<int> teacher;
 }groupBase;
@@ -197,7 +199,76 @@ int SrcDowTotDist() // SA 이웃해용 총 거리계산
 	}
 	return Dtotaltime;
 }
-int SrcFit
+int FitnessCal() // 시간표의 적합도 합산 계산
+{ 
+
+}
+int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
+{
+
+}
+int GrpDuplicate(int grp1, int grp2) // 두 그룹이 같은 시간에 수업이 가능한지 판단! ( 교사 / 학생 / 교실 중복여부 판단 ) Able:1 Disable:-1
+{
+	for (int i = 0; i < group[grp1].teacher.size(); i++)
+	{
+		for (int j = 0; j < group[grp2].teacher.size(); j++)
+		{
+			if (group[grp1].teacher[i] == group[grp2].teacher[j])
+				return -1;
+		}
+	}
+	for (int i = 0; i < group[grp1].student.size(); i++)
+	{
+		for (int j = 0; j < group[grp2].student.size(); j++)
+		{
+			if (group[grp1].student[i] == group[grp2].student[j])
+				return -1;
+		}
+	}
+	for (int i = 0; i < group[grp1].subject.size(); i++)
+	{
+		for (int j = 0; j < group[grp2].subject.size(); j++)
+		{
+			if (group[grp1].subject[i].floor == group[grp2].subject[j].floor && group[grp1].subject[i].x == group[grp2].subject[j].y && group[grp1].subject[i].y == group[grp2].subject[j].y)
+				return -1;
+		}
+	}
+	return 1;
+}
+int GrpAbleTime(int grpCode, int day, int period)// 이 그룹이 그 시간에 수업이 가능한지 판단!
+{
+	for (int i = 0; i < group[grpCode].teacher.size; i++)
+	{
+		if (impTime[group[grpCode].teacher[i]][day][period] == 1)
+		{
+			return -1;
+		}
+	}
+	if (group[grpCode].grade == 2)
+	{
+		if (timeTable[day][period][1] == -1)
+		{
+			return 1;
+		}
+		else // Need to find duplicated teacher & students
+		{ 
+			int sameTimeGrp = timeTable[day][period][1];
+			return GrpDuplicate(grpCode,sameTimeGrp);
+		}
+	}
+	else
+	{
+		if (timeTable[day][period][0] == -1) // Need to find duplicated teacher & students, also
+		{
+			return 1;
+		}
+		else
+		{
+			int sameTimeGrp = timeTable[day][period][0];
+			return GrpDuplicate(grpCode,sameTimeGrp);
+		}
+	}
+}
 
 
 int main()
@@ -218,6 +289,19 @@ int main()
 			}
 			for (int k=0;)
 		}
+	}
+	for (int i = 0; i < group.size(); i++)
+	{
+		int inc = 0;
+		for (int j = 0; j < group[i].subject.size(); j++)
+		{
+			if (group[i].subject[j].sequent == 1)
+			{
+				inc = 1;
+				break;
+			}
+		}
+		group[i].sequentInc = inc;
 	}
 	for (int i = 0; i < 5; i++) // Initializing Timetable
 	{
