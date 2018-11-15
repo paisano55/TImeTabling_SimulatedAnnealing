@@ -5,9 +5,11 @@
 #include <vector>
 #include <time.h>
 #include <memory.h>
+
 using namespace std;
 int timeTable[5][9][2] // -1 : 할당된 그룹없음
 int timeTableSrc[5][9][2] // Save the code of Searched Group
+
 typedef struct subjectbase
 {
 	vector<int> student;
@@ -15,6 +17,7 @@ typedef struct subjectbase
 	vector <int> teacher;
 	bool sequent; // 연강 여부
 }subjectBase;
+
 typedef struct groupbase
 {
 	vector<subjectBase> subject;
@@ -201,7 +204,50 @@ int SrcDowTotDist() // SA 이웃해용 총 거리계산
 }
 int FitnessCal() // 시간표의 적합도 합산 계산
 { 
-
+	int period1Seq, period9Seq;
+	for (int day = 0; day <= 3; day++) // 여기서부터 아래 4개의 for문은 1교시/9교시 연강을 확인한다
+	{
+		for (int i = 0; i < group[timeTable[day][1][1]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[timeTable[day + 1][1][1]].teacher.size(); j++)
+			{
+				if (group[timeTable[day][1][1]].teacher[i] == group[timeTable[day + 1][1][1]].teacher[j])
+				{
+					period1Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[timeTable[day][1][2]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[timeTable[day + 1][1][2]].teacher.size(); j++)
+			{
+				if (group[timeTable[day][1][2]].teacher[i] == group[timeTable[day + 1][1][2]].teacher[j])
+				{
+					period1Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[timeTable[day][9][1]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[timeTable[day + 1][9][1]].teacher.size(); j++)
+			{
+				if (group[timeTable[day][9][1]].teacher[i] == group[timeTable[day + 1][9][1]].teacher[j])
+				{
+					period9Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[timeTable[day][9][2]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[timeTable[day + 1][9][2]].teacher.size(); j++)
+			{
+				if (group[timeTable[day][9][2]].teacher[i] == group[timeTable[day + 1][9][2]].teacher[j])
+				{
+					period9Seq++;
+				}
+			}
+		}
+	}
 }
 int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
 {
