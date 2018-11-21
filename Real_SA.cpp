@@ -7,30 +7,33 @@
 #include <memory.h>
 
 using namespace std;
-int timeTable[5][9][2] // -1 : 할당된 그룹없음
-int timeTableSrc[5][9][2] // Save the code of Searched Group
+int timeTable[5][9][2]; // -1 : 할당된 그룹없음
+int timeTableSrc[5][9][2]; // Save the code of Searched Group
+int grpTable[5][9][2][5];
+int grpTableSrc[5][9][2][5];
 
+subjectData[grpTable[5][3][0][1]].student.size();
 typedef struct subjectbase
 {
 	vector<int> student;
 	int subcode, floor, x, time, y;
 	vector <int> teacher;
-	bool sequent; // 연강 여부
+	int sequent; // 연강 시간
 }subjectBase;
-
 typedef struct groupbase
-{
+{ 
 	vector<subjectBase> subject;
 	int groupCode;
 	int maxTime;
 	int currentTime;
 	int grade;
-	bool sequentInc; // 연강 과목 포함 여부
+	int seqTime; // 최대 연강 시수
 	vector<int> student;
 	vector<int> teacher;
 }groupBase;
 
 vector<groupBase> group;
+vector<subjectBase> subjectData;
 
 int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 전부먹통!
 {
@@ -204,7 +207,7 @@ int SrcDowTotDist() // SA 이웃해용 총 거리계산
 }
 int FitnessCal() // 시간표의 적합도 합산 계산
 { 
-	int period1Seq, period9Seq;
+	int period1Seq, period9Seq, totDist, fitness;
 	for (int day = 0; day <= 3; day++) // 여기서부터 아래 4개의 for문은 1교시/9교시 연강을 확인한다
 	{
 		for (int i = 0; i < group[timeTable[day][1][1]].teacher.size(); i++)
@@ -248,10 +251,58 @@ int FitnessCal() // 시간표의 적합도 합산 계산
 			}
 		}
 	}
+	totDist = DowTotDist();
+	fitness = totDist + period1Seq * 100 + period9Seq * 100;
+
 }
 int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
 {
-
+	int period1Seq, period9Seq, totDist, fitness;
+	for (int day = 0; day <= 3; day++) // 여기서부터 아래 4개의 for문은 1교시/9교시 연강을 확인한다
+	{
+		for (int i = 0; i < group[srcTimeTable[day][1][1]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[srcTimeTable[day + 1][1][1]].teacher.size(); j++)
+			{
+				if (group[srcTimeTable[day][1][1]].teacher[i] == group[srcTimeTable[day + 1][1][1]].teacher[j])
+				{
+					period1Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[srcTimeTable[day][1][2]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[srcTimeTable[day + 1][1][2]].teacher.size(); j++)
+			{
+				if (group[srcTimeTable[day][1][2]].teacher[i] == group[srcTimeTable[day + 1][1][2]].teacher[j])
+				{
+					period1Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[srcTimeTable[day][9][1]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[srcTimeTable[day + 1][9][1]].teacher.size(); j++)
+			{
+				if (group[srcTimeTable[day][9][1]].teacher[i] == group[srcTimeTable[day + 1][9][1]].teacher[j])
+				{
+					period9Seq++;
+				}
+			}
+		}
+		for (int i = 0; i < group[srcTimeTable[day][9][2]].teacher.size(); i++)
+		{
+			for (int j = 0; j < group[srcTimeTable[day + 1][9][2]].teacher.size(); j++)
+			{
+				if (group[srcTimeTable[day][9][2]].teacher[i] == group[srcTimeTable[day + 1][9][2]].teacher[j])
+				{
+					period9Seq++;
+				}
+			}
+		}
+	}
+	totDist = SrcDowTotDist();
+	fitness = totDist + period1Seq * 100 + period9Seq * 100;
 }
 int GrpDuplicate(int grp1, int grp2) // 두 그룹이 같은 시간에 수업이 가능한지 판단! ( 교사 / 학생 / 교실 중복여부 판단 ) Able:1 Disable:-1
 {
@@ -290,6 +341,25 @@ int GrpAbleTime(int grpCode, int day, int period)// 이 그룹이 그 시간에 수업이 �
 			return -1;
 		}
 	}
+	if (period == 0)
+	{
+		if (grpCode == timeTable[day][period + 1] && group[grpCode].seqTime==1)
+			return -1;
+	}
+	else if (period == 8)
+	{
+		if (grpCode == timeTable[day][period - 1] && group[grpCode].seqTime==1)
+			return -1;
+	}
+	else
+	{
+		if(grpCode == timeTable[day][period-1] && group[grpCode].seqTime==1)
+			return -1
+		if(grpCode == timeTable[day][period + 1] && group[grpCode].seqTime == 1)
+			return -1;
+		if(grpCode == timeTable[day][period - 1] && grpCode == timeTable[day][period + 1] && seqTime == 2)
+			return -1;
+	}
 	if (group[grpCode].grade == 2)
 	{
 		if (timeTable[day][period][1] == -1)
@@ -315,12 +385,144 @@ int GrpAbleTime(int grpCode, int day, int period)// 이 그룹이 그 시간에 수업이 �
 		}
 	}
 }
+int SubDistCal(int dowi, int periodi, int dowf, int periodf)
+{
+	int i, j, k, l, moving, temp1, temp2;
+	int stuInfo;
+	int howmansub = 0;, howmanstu, whichsmall;
+	int howmuctime[60] = { 0 };
+	int totaltime = 0;
+	vector<int>student_list;
+	vector<int>iniclass_student;
+	vector<int>finclass_student;
+
+	struct position
+	{
+		int floor, x, y;
+	};
+	vector<position> initial_position;
+	vector<position> final_position;
+	vector<position> stair_location;
+	stair_location[0].x = 0; stair_location[0].y = 0;
+	stair_location[1].x = 5; stair_location[1].y = 1;
+	stair_location[1].x = -7; stair_location[1].y = 1;
+	stair_location[1].x = -3; stair_location[1].y = 5;
+	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
+	for (i = 0; i < 2; i++)
+	{
+		for (j = 0; j < 5; j++)
+		{
+			if (grpTable[dowi][periodi][i][j] != -1)
+				howmansub++;//과목 수를 센다
+		}
+	}
+	for (i = 0; i < howmansub; i++)
+	{
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				while (grpTable[dowi][periodi][j][k] != -1)
+				{
+					howmanstu += subjectData[grpTable[dowi][periodi][j][k]].student.size();
+				}//학생 수의 최댓값을 센다(겹치는 학생 고려 x한 결과)
+			}
+		}
+		whichsmall = howmanstu;
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < 2; k++)
+			{
+				for (l = 0; l < 5; l++)
+				{
+					while (grpTable[dowi][periodi][j][k] != -1)
+					{
+						stuInfo = subjectData[grpTable[dowi][periodi][k][l].student[j];
+						iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+					}
+				}
+			}
+		}
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				while (grpTable[dowf][periodf][j][k] != -1)
+				{
+					howmanstu += subjectData[grpTable[dowf][periodf][j][k]].student.size();
+				}
+			}
+		}
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < 2; k++)
+			{
+				for (l = 0; l < 5; l++)
+				{
+					while (grpTable[dowf][periodf][j][k] != -1)
+					{
+						stuInfo = subjectData[grpTable[dowf][periodf][k][l].student[j];
+						finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+					}
+				}
+			}
+		}
+		if (whichsmall < howmanstu) howmanstu = whichsmall;
+		//만약 그 다음 교시 수업에 참여하는 학생들이 이전 수업 학생 수보다 적다면 이전 수업 학생들의 다음 시간이 공강이라는 뜻이므로 그 학생들은 계산에 넣지 않기 위함
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < howmanstu; k++)
+			{
+				if (iniclass_student[j] == finclass_student[k])
+				{
+					student_list.push_back(finclass_student[k]);
+				}
+			}
+		}//어떤 시간과 그 다음 시간 모두 수업을 듣는 학생들만 추려서 리스트에 정리해 넣음
+	}
+	for (i = 0; i < student_list.size(); i++)
+	{
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				initial_position[i].floor = subjectData[grpTable[dowi][periodi][j][k]].floor
+					initial_position[i].x = subjectData[grpTable[dowi][periodi][j][k]].x;
+				initial_position[i].y = subjectData[grpTable[dowi][periodi][j][k]].y;//학생들의 초기 위치 저장 
+				final_position[i].floor = subjectData[timeTable[dowf][periodf][j][k].floor;
+				final_position[i].x = subjectData[grpTable[dowf][periodf][j][k].x;
+				final_position[i].y = subjectData[grpTable[dowf][periodf][j][k].y;//학생들의 이동 위치 저장 
+				totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
+				moving = 100;
+				for (l = 0; l < 5; l++)
+				{
+					temp1 = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
+					if (moving > temp) moving = temp;
+					totaltime += moving;
+					moving = 100;
+					temp2 = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
+					if (moving > temp) moving = temp;
+					totaltime += moving;
+				}
+			}
+		}
+	}
+	return totaltime;
+}
 
 
 int main()
 {
 	srand(time(NULL));
 	int randGroup = 0;
+	int groupDiv;
+	for (int i = 0; i < group.size(); i++)
+	{
+		if (group[i].grade == 3)
+		{
+			groupDiv = i;
+		}
+	}
 	for (int i = 0; i < group.size(); i++)
 	{
 		group[i].currentTime = 0;
@@ -341,10 +543,10 @@ int main()
 		int inc = 0;
 		for (int j = 0; j < group[i].subject.size(); j++)
 		{
-			if (group[i].subject[j].sequent == 1)
+			if (group[i].subject[j].sequent >= 1)
 			{
-				inc = 1;
-				break;
+				if (group[i].subject[j].sequent > inc)
+					inc = group	[i].subject[j].sequent;
 			}
 		}
 		group[i].sequentInc = inc;
@@ -359,18 +561,33 @@ int main()
 			timeTableSrc[i][j][1] = -1;
 		}
 	}
-		for (int i = 0; i < 5; i++) // Random Tabling
-		{
-			while (1) {
-				randGroup = rand() % (group.size());
-				if (group[randGroup].maxTime >= group[randGroup].currentTime + 1)
+	for (int i = 0; i < 5; i++) // Random Tabling
+	{
+		while (1) {
+			randGroup = rand() % (groupDiv);
+			if (group[randGroup].maxTime >= group[randGroup].currentTime + 1)
+			{
+				if (GrpAbleTime(randGroup, i, 0))
 				{
 					group[randGroup].currentTime++;
-					timeTable[i][0] = randGroup;
+					timeTable[i][0][0] = randGroup;
 					break;
 				}
 			}
+			randGroup = rand() % (group.size() - groupDiv);
+			randGroup += groupDiv;
+			if (group[randGroup].maxTime >= group[randGroup].currentTime + 1)
+			{
+				if (GrpAbleTime(randGroup, i, 0))
+				{
+					group[randGroup].currentTime++;
+					timeTable[i][0][1] = randGroup;
+					break;
+				}
+			}
+			
 		}
+	}
 	printf("Random Tabling Finished!\n");
 	for (int prd = 0; prd < 5; prd++) // Greedy Tabling ( For initial Table )
 	{
@@ -379,7 +596,8 @@ int main()
 			int shortDist = 0;
 			int currentDist = 0;
 			int shortGroup = 0;
-			for (int groupGreed = 0; groupGreed < group.size(); groupGreed++)
+			int groupGreed;
+			for (groupGreed = 0; groupGreed < group.size(); groupGreed++)
 			{
 				if (group[groupGreed].maxTime >= group[groupGreed].currentTime + 1)
 				{
@@ -411,7 +629,7 @@ int main()
 	}
 	printf("Greedy Initial Tabling Finished! \n");
 	double tem = 1, temDec = 0.8, tFin = 0.01;
-	int loop = 5000, looped, randDay1, randDay2, randPrd1, randPrd2, randGrd, swap, srcDist, crtDist, distDiff;
+	int loop = 5000, looped, randDay1, randDay2, randPrd1, randPrd2, randGrd, swap, srcFit, crtFit, fitDiff;
 	memcpy(timeTableSrc, timeTable, sizeof(timeTable));
 	for (; tem > tFin; tem *= temDec)
 	{
@@ -429,10 +647,10 @@ int main()
 			swap = timeTableSrc[randDay1][randPrd1][randGrd];
 			timeTableSrc[randDay1][randPrd1][randGrd] = timeTableSrc[randDay2][randPrd2][randGrd];
 			timeTableSrc[randDay2][randPrd2][randGrd] = swap;
-			crtDist = DowTotDist();
-			srcDist = SrcDowTotDist();
-			distDiff = srcDist - crtDist;
-			if (distDiff <= 0)
+			crtFit = FitnessCal();
+			srcFit = SrcFitnessCal();
+			fitDiff = srcFit - crtFit;
+			if (fitDiff <= 0)
 			{
 				memcpy(timeTable, timeTableSrc, sizeof(timeTableSrc));
 				continue;
@@ -441,7 +659,7 @@ int main()
 			{
 				double random;
 				random = (1 / ((rand() % 1000) + 1));
-				if (exp((float)((-distDiff) / (tem))) >= random)
+				if (exp((float)((-fitDiff) / (tem))) >= random)
 				{
 					memcpy(timeTable, timeTableSrc, sizeof(timeTableSrc));
 					continue;
@@ -453,8 +671,26 @@ int main()
 			}
 		}
 	}
-	printf("Simulated Annealing Done!");
-	for (int i = 0, i < 6; i++)
+	printf("1차 Simulated Annealing Done!");
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			for (int k = 0; k < group[timeTable[i][j][0].subject.size()]; k++)
+			{
+				grpTable[i][j][0][k] = group[timeTable[i][j][0]].subject[k];
+			}
+			for (int k = 0; k < group[timeTable[i][j][1].subject.size()]; k++)
+			{
+				grpTable[i][j][0][1] = group[timeTable[i][j][1]].subject[k];
+			}
+		}
+	}
+	for (tem = 1; tem >= tFin; t *= temDec)
+	{
+
+	}
+	for (int i = 0; i < 9; i++)
 	{
 		for (int j = 0; j < 5; j++)
 		{
