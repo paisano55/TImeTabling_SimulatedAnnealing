@@ -340,24 +340,49 @@ int GrpAbleTime(int grpCode, int day, int period)// 이 그룹이 그 시간에 수업이 �
 			return -1;
 		}
 	}
-	if (period == 0)
+	if (group[grpCode].grade == 2)
 	{
-		if (grpCode == timeTable[day][period + 1] && group[grpCode].seqTime==1)
-			return -1;
+		if (period == 0)
+		{
+			if (grpCode == timeTable[day][period + 1][0] && group[grpCode].seqTime == 1)
+				return -1;
+		}
+		else if (period == 8)
+		{
+			if (grpCode == timeTable[day][period - 1][0] && group[grpCode].seqTime == 1)
+				return -1;
+		}
+		else
+		{
+			if (grpCode == timeTable[day][period - 1][0] && group[grpCode].seqTime == 1)
+				return -1;
+			if (grpCode == timeTable[day][period + 1][0] && group[grpCode].seqTime == 1)
+				return -1;
+			if (grpCode == timeTable[day][period - 1][0] && grpCode == timeTable[day][period + 1][0] && seqTime == 2)
+				return -1;
+		}
 	}
-	else if (period == 8)
+	else if (group[grpCode].grade == 3)
 	{
-		if (grpCode == timeTable[day][period - 1] && group[grpCode].seqTime==1)
-			return -1;
-	}
-	else
-	{
-		if(grpCode == timeTable[day][period-1] && group[grpCode].seqTime==1)
-			return -1
-		if(grpCode == timeTable[day][period + 1] && group[grpCode].seqTime == 1)
-			return -1;
-		if(grpCode == timeTable[day][period - 1] && grpCode == timeTable[day][period + 1] && seqTime == 2)
-			return -1;
+		if (period == 0)
+		{
+			if (grpCode == timeTable[day][period + 1][1] && group[grpCode].seqTime == 1)
+				return -1;
+		}
+		else if (period == 8)
+		{
+			if (grpCode == timeTable[day][period - 1][1] && group[grpCode].seqTime == 1)
+				return -1;
+		}
+		else
+		{
+			if (grpCode == timeTable[day][period - 1][1] && group[grpCode].seqTime == 1)
+				return -1;
+			if (grpCode == timeTable[day][period + 1][1] && group[grpCode].seqTime == 1)
+				return -1;
+			if (grpCode == timeTable[day][period - 1][1] && grpCode == timeTable[day][period + 1][1] && seqTime == 2)
+				return -1;
+		}
 	}
 	if (group[grpCode].grade == 2)
 	{
