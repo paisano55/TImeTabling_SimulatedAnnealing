@@ -9,10 +9,8 @@
 using namespace std;
 int timeTable[5][9][2]; // -1 : 할당된 그룹없음
 int timeTableSrc[5][9][2]; // Save the code of Searched Group
-int grpTable[5][9][2][5];
-int grpTableSrc[5][9][2][5];
-
-subjectData[grpTable[5][3][0][1]].student.size();
+int subTable[5][9][2][5];
+int subTableSrc[5][9][2][5];
 typedef struct subjectbase
 {
 	vector<int> student;
@@ -113,7 +111,7 @@ int DowTotDist()
 	int dow, period;
 	for (dow = 0; dow < 5; dow++)
 	{
-		for (period = 0; period < 5; period++)
+		for (period = 0; period < 8; period++)
 		{
 			Dtotaltime += DistCal(dow, period, dow, period + 1);
 		}
@@ -198,7 +196,7 @@ int SrcDowTotDist() // SA 이웃해용 총 거리계산
 	int dow, period;
 	for (dow = 0; dow < 5; dow++)
 	{
-		for (period = 0; period < 5; period++)
+		for (period = 0; period < 8; period++)
 		{
 			Dtotaltime += DistCal(dow, period, dow, period + 1);
 		}
@@ -304,6 +302,7 @@ int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
 	totDist = SrcDowTotDist();
 	fitness = totDist + period1Seq * 100 + period9Seq * 100;
 }
+
 int GrpDuplicate(int grp1, int grp2) // 두 그룹이 같은 시간에 수업이 가능한지 판단! ( 교사 / 학생 / 교실 중복여부 판단 ) Able:1 Disable:-1
 {
 	for (int i = 0; i < group[grp1].teacher.size(); i++)
@@ -412,7 +411,7 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 	{
 		for (j = 0; j < 5; j++)
 		{
-			if (grpTable[dowi][periodi][i][j] != -1)
+			if (subTable[dowi][periodi][i][j] != -1)
 				howmansub++;//과목 수를 센다
 		}
 	}
@@ -422,9 +421,9 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 		{
 			for (k = 0; k < 5; k++)
 			{
-				while (grpTable[dowi][periodi][j][k] != -1)
+				while (subTable[dowi][periodi][j][k] != -1)
 				{
-					howmanstu += subjectData[grpTable[dowi][periodi][j][k]].student.size();
+					howmanstu += subjectData[subTable[dowi][periodi][j][k]].student.size();
 				}//학생 수의 최댓값을 센다(겹치는 학생 고려 x한 결과)
 			}
 		}
@@ -435,9 +434,9 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 			{
 				for (l = 0; l < 5; l++)
 				{
-					while (grpTable[dowi][periodi][j][k] != -1)
+					while (subTable[dowi][periodi][j][k] != -1)
 					{
-						stuInfo = subjectData[grpTable[dowi][periodi][k][l].student[j];
+						stuInfo = subjectData[subTable[dowi][periodi][k][l].student[j];
 						iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
 					}
 				}
@@ -447,9 +446,9 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 		{
 			for (k = 0; k < 5; k++)
 			{
-				while (grpTable[dowf][periodf][j][k] != -1)
+				while (subTable[dowf][periodf][j][k] != -1)
 				{
-					howmanstu += subjectData[grpTable[dowf][periodf][j][k]].student.size();
+					howmanstu += subjectData[subTable[dowf][periodf][j][k]].student.size();
 				}
 			}
 		}
@@ -459,9 +458,9 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 			{
 				for (l = 0; l < 5; l++)
 				{
-					while (grpTable[dowf][periodf][j][k] != -1)
+					while (subTable[dowf][periodf][j][k] != -1)
 					{
-						stuInfo = subjectData[grpTable[dowf][periodf][k][l].student[j];
+						stuInfo = subjectData[subTable[dowf][periodf][k][l].student[j];
 						finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
 					}
 				}
@@ -486,12 +485,12 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 		{
 			for (k = 0; k < 5; k++)
 			{
-				initial_position[i].floor = subjectData[grpTable[dowi][periodi][j][k]].floor
-					initial_position[i].x = subjectData[grpTable[dowi][periodi][j][k]].x;
-				initial_position[i].y = subjectData[grpTable[dowi][periodi][j][k]].y;//학생들의 초기 위치 저장 
+				initial_position[i].floor = subjectData[subTable[dowi][periodi][j][k]].floor
+					initial_position[i].x = subjectData[subTable[dowi][periodi][j][k]].x;
+				initial_position[i].y = subjectData[subTable[dowi][periodi][j][k]].y;//학생들의 초기 위치 저장 
 				final_position[i].floor = subjectData[timeTable[dowf][periodf][j][k].floor;
-				final_position[i].x = subjectData[grpTable[dowf][periodf][j][k].x;
-				final_position[i].y = subjectData[grpTable[dowf][periodf][j][k].y;//학생들의 이동 위치 저장 
+				final_position[i].x = subjectData[subTable[dowf][periodf][j][k].x;
+				final_position[i].y = subjectData[subTable[dowf][periodf][j][k].y;//학생들의 이동 위치 저장 
 				totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
 				moving = 100;
 				for (l = 0; l < 5; l++)
@@ -509,6 +508,210 @@ int SubDistCal(int dowi, int periodi, int dowf, int periodf)
 	}
 	return totaltime;
 }
+int SrcSubDistCal(int dowi, int periodi, int dowf, int periodf)
+{
+	int i, j, k, l, moving, temp1, temp2;
+	int stuInfo;
+	int howmansub = 0; , howmanstu, whichsmall;
+	int howmuctime[60] = { 0 };
+	int totaltime = 0;
+	vector<int>student_list;
+	vector<int>iniclass_student;
+	vector<int>finclass_student;
+
+	struct position
+	{
+		int floor, x, y;
+	};
+	vector<position> initial_position;
+	vector<position> final_position;
+	vector<position> stair_location;
+	stair_location[0].x = 0; stair_location[0].y = 0;
+	stair_location[1].x = 5; stair_location[1].y = 1;
+	stair_location[1].x = -7; stair_location[1].y = 1;
+	stair_location[1].x = -3; stair_location[1].y = 5;
+	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
+	for (i = 0; i < 2; i++)
+	{
+		for (j = 0; j < 5; j++)
+		{
+			if (subTableSrc[dowi][periodi][i][j] != -1)
+				howmansub++;//과목 수를 센다
+		}
+	}
+	for (i = 0; i < howmansub; i++)
+	{
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				while (subTableSrc[dowi][periodi][j][k] != -1)
+				{
+					howmanstu += subjectData[subTableSrc[dowi][periodi][j][k]].student.size();
+				}//학생 수의 최댓값을 센다(겹치는 학생 고려 x한 결과)
+			}
+		}
+		whichsmall = howmanstu;
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < 2; k++)
+			{
+				for (l = 0; l < 5; l++)
+				{
+					while (subTableSrc[dowi][periodi][j][k] != -1)
+					{
+						stuInfo = subjectData[subTableSrc[dowi][periodi][k][l].student[j];
+						iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+					}
+				}
+			}
+		}
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				while (subTableSrc[dowf][periodf][j][k] != -1)
+				{
+					howmanstu += subjectData[subTableSrc[dowf][periodf][j][k]].student.size();
+				}
+			}
+		}
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < 2; k++)
+			{
+				for (l = 0; l < 5; l++)
+				{
+					while (subTableSrc[dowf][periodf][j][k] != -1)
+					{
+						stuInfo = subjectData[subTableSrc[dowf][periodf][k][l].student[j];
+						finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+					}
+				}
+			}
+		}
+		if (whichsmall < howmanstu) howmanstu = whichsmall;
+		//만약 그 다음 교시 수업에 참여하는 학생들이 이전 수업 학생 수보다 적다면 이전 수업 학생들의 다음 시간이 공강이라는 뜻이므로 그 학생들은 계산에 넣지 않기 위함
+		for (j = 0; j < howmanstu; j++)
+		{
+			for (k = 0; k < howmanstu; k++)
+			{
+				if (iniclass_student[j] == finclass_student[k])
+				{
+					student_list.push_back(finclass_student[k]);
+				}
+			}
+		}//어떤 시간과 그 다음 시간 모두 수업을 듣는 학생들만 추려서 리스트에 정리해 넣음
+	}
+	for (i = 0; i < student_list.size(); i++)
+	{
+		for (j = 0; j < 2; j++)
+		{
+			for (k = 0; k < 5; k++)
+			{
+				initial_position[i].floor = subjectData[subTableSrc[dowi][periodi][j][k]].floor
+					initial_position[i].x = subjectData[subTableSrc[dowi][periodi][j][k]].x;
+				initial_position[i].y = subjectData[subTableSrc[dowi][periodi][j][k]].y;//학생들의 초기 위치 저장 
+				final_position[i].floor = subjectData[timeTable[dowf][periodf][j][k].floor;
+				final_position[i].x = subjectData[subTableSrc[dowf][periodf][j][k].x;
+				final_position[i].y = subjectData[subTableSrc[dowf][periodf][j][k].y;//학생들의 이동 위치 저장 
+				totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
+				moving = 100;
+				for (l = 0; l < 5; l++)
+				{
+					temp1 = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
+					if (moving > temp) moving = temp;
+					totaltime += moving;
+					moving = 100;
+					temp2 = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
+					if (moving > temp) moving = temp;
+					totaltime += moving;
+				}
+			}
+		}
+	}
+	return totaltime;
+}
+int SubTotDist() // 2차 SA 이웃해용 총 거리계산
+{
+	int Dtotaltime = 0;
+	int dow, period;
+	for (dow = 0; dow < 5; dow++)
+	{
+		for (period = 0; period < 8; period++)
+		{
+			Dtotaltime += SubDistCal(dow, period, dow, period + 1);
+		}
+	}
+	return Dtotaltime;
+}
+int SrcSubTotDist() // 2차 SA 이웃해용 총 거리계산
+{
+	int Dtotaltime = 0;
+	int dow, period;
+	for (dow = 0; dow < 5; dow++)
+	{
+		for (period = 0; period < 8; period++)
+		{
+			Dtotaltime += SrcSubDistCal(dow, period, dow, period + 1);
+		}
+	}
+	return Dtotaltime;
+}
+int subFit()
+{
+	vector<int> initTea1;
+	vector<int> initTea9;
+	vector<int> finTea1;
+	vector<int> finTea9;
+
+	int Seq1=0, Seq9=0, totDist, fit=0;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0, j < 5; j++)
+		{
+			if (subTable[i][0][0][j] != -1)
+				initTea1.push(subjectData[subTable[i][0][0][j]].teacher);
+			if (subTable[i][0][1][j] != -1)
+				initTea1.push(subjectData[subTable[i][0][1][j]].teacher);
+			if (subTable[i][8][0][j] != -1)
+				initTea9.push(subjectData[subTable[i][8][0][j]].teacher);
+			if (subTable[i][8][1][j] != -1)
+				initTea9.push(subjectData[subTable[i][8][1][j]].teacher);
+			if (subTable[i + 1][0][0][j] != -1)
+				finTea1.push(subjectData[subTable[i + 1][0][0][j]].teacher);
+			if (subTable[i + 1][0][1][j] != -1)
+				finTea1.push(subjectData[subTable[i + 1][0][1][j]].teacher);
+			if (subTable[i + 1][8][0][j] != -1)
+				finTea9.push(subjectData[subTable[i + 1][8][0][j]].teacher);
+			if (subTable[i + 1][8][1][j] != -1)
+				finTea9.push(subjectData[subTable[i + 1][8][1][j]].teacher);
+		}
+		for (int i = 0; i < initTea1.size(); i++)
+		{
+			for (int j = 0; j < finTea1.size(); j++)
+			{
+				if (initTea1[i] == finTea1[j])
+					Seq1++;
+			}
+		}
+		for (int i = 0; i < initTea9.size(); i++)
+		{
+			for (int j = 0; j < finTea1.size(); j++)
+			{
+				if (initTea9[i] == finTea9[j])
+					Seq9++;
+			}
+		}
+		initTea1.clear();
+		initTea9.clear();
+		finTea1.clear();
+		finTea2.clear();
+	}
+	totDist = SubTotDist();
+	fit = totDist + Seq1 * 100 + Seq9 * 100;
+}
+
 
 
 int main()
@@ -678,11 +881,11 @@ int main()
 		{
 			for (int k = 0; k < group[timeTable[i][j][0].subject.size()]; k++)
 			{
-				grpTable[i][j][0][k] = group[timeTable[i][j][0]].subject[k];
+				subTable[i][j][0][k] = group[timeTable[i][j][0]].subject[k];
 			}
 			for (int k = 0; k < group[timeTable[i][j][1].subject.size()]; k++)
 			{
-				grpTable[i][j][0][1] = group[timeTable[i][j][1]].subject[k];
+				subTable[i][j][0][1] = group[timeTable[i][j][1]].subject[k];
 			}
 		}
 	}
