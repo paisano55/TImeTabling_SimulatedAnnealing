@@ -14,7 +14,7 @@ int subTableSrc[5][9][2][5];
 typedef struct subjectbase
 {
 	vector<int> student;
-	int subcode, floor, x, time, y;
+	int subcode, floor, x, time, y, grade;
 	vector <int> teacher;
 	int sequent; // 연강 시간
 }subjectBase;
@@ -29,18 +29,23 @@ typedef struct groupbase
 	vector<int> student;
 	vector<int> teacher;
 }groupBase;
+typedef struct timebase
+{
+	int day, period, selected;
+}timeBase;
 
 vector<groupBase> group;
 vector<subjectBase> subjectData;
+vector<vector<timeBase> >time(200);
 
-int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 전부먹통!
+int DistCal(int dowi, int periodi, int dowf, int periodf)
 {
 	int i, j, k, moving, temp;
 	int stuInfo;
-	int howmansub, howmanstu, whichsmall;
+	int howmansub = 0, howmanstu = 0, whichsmall;
 	int howmuctime[60] = { 0 };
 	int totaltime = 0;
-	vector<int> student_list; 
+	vector<int> student_list;
 	vector<int> iniclass_student;
 	vector<int> finclass_student;
 	struct position
@@ -50,21 +55,42 @@ int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 �
 	vector<position> initial_position;
 	vector<position> final_position;
 	vector<position> stair_location;
-	howmansub = group[timeTable[dowi][periodi]].subject.size();
+	stair_location[0].x = 0; stair_location[0].y = 0;
+	stair_location[1].x = 5; stair_location[1].y = 1;
+	stair_location[1].x = -7; stair_location[1].y = 1;
+	stair_location[1].x = -3; stair_location[1].y = 5;
+	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
+	for (i = 0; i < 2; i++)
+	{
+		howmansub += group[timeTable[dowi][periodi][i].subject.size();
+	}
 	for (i = 0; i < howmansub; i++)
 	{
-		howmanstu = group[timeTable[dowi][periodi]].subject[i].student.size();
+		for (j = 0; j < 2; j++)
+		{
+			howmanstu += group[timeTable[dowi][periodi]].subject[i].student.size();
+		}
 		whichsmall = howmanstu;
 		for (j = 0; j < howmanstu; j++)
 		{
-			stuInfo = group[timeTable[dowi][periodi]].subject[i].student[j];
-			iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			for (k = 0; k < 2; k++)
+			{
+				stuInfo = group[timeTable[dowi][periodi][k].subject[i].student[j];
+				iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			}
 		}
-		howmanstu = group[timeTable[dowf][periodf]].subject[i].student.size();
+		howmanstu = 0;//학생 수 초기화
+		for (j = 0; j < 2; j++)
+		{
+			howmanstu += group[timeTable[dowf][periodf][k].subject[i].student.size();
+		}
 		for (j = 0; j < howmanstu; j++)
 		{
-			stuInfo = group[timeTable[dowf][periodf]].subject[i].student[j];
-			finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			for (k = 0; k < 2; k++)
+			{
+				stuInfo = group[timeTable[dowf][periodf][k]].subject[i].student[j];
+				finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			}
 		}
 		if (whichsmall < howmanstu) howmanstu = whichsmall;
 		//만약 그 다음 교시 수업에 참여하는 학생들이 이전 수업 학생 수보다 적다면 이전 수업 학생들의 다음 시간이 공강이라는 뜻이므로 그 학생들은 계산에 넣지 않기 위함
@@ -78,29 +104,31 @@ int DistCal(int dowi, int periodi, int dowf, int periodf) // 거리계산 수정요함 �
 				}
 			}
 		}//어떤 시간과 그 다음 시간 모두 수업을 듣는 학생들만 추려서 리스트에 정리해 넣음
-		initial_position[i].floor = group[timeTable[dowi][periodi]].subject[i].floor;
-		initial_position[i].x = group[timeTable[dowi][periodi]].subject[i].x;
-		initial_position[i].y = group[timeTable[dowi][periodi]].subject[i].y;//학생들의 초기 위치 저장 
-		final_position[i].floor = group[timeTable[dowf][periodf]].subject[i].floor;
-		final_position[i].x = group[timeTable[dowf][periodf]].subject[i].x;
-		final_position[i].y = group[timeTable[dowf][periodf]].subject[i].y;//학생들의 이동 위치 저장 
 	}
-	stair_location[0].x = 0; stair_location[0].y = 0;
-	stair_location[1].x = 5; stair_location[1].y = 1;
-	stair_location[1].x = -7; stair_location[1].y = 1;
-	stair_location[1].x = -3; stair_location[1].y = 5;
-	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
 	for (i = 0; i < student_list.size(); i++)
 	{
-		totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
-		moving = 100;
-		for (i = 0; i < 5; i++)
+		for (j = 0; j < 2; j++)
 		{
-			temp = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
-			temp = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
-			if (moving > temp) moving = temp;
+
+			initial_position[i].floor = subjectData[grpTable[dowi][periodi][j]].floor
+				initial_position[i].x = subjectData[grpTable[dowi][periodi][j]].x;
+			initial_position[i].y = subjectData[grpTable[dowi][periodi][j]].y;//학생들의 초기 위치 저장 
+			final_position[i].floor = subjectData[timeTable[dowf][periodf][j]].floor;
+			final_position[i].x = subjectData[grpTable[dowf][periodf][j]].x;
+			final_position[i].y = subjectData[grpTable[dowf][periodf][j]].y;//학생들의 이동 위치 저장 
+			totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
+			moving = 100;
+			for (l = 0; l < 5; l++)
+			{
+				temp1 = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
+				if (moving > temp) moving = temp;
+				totaltime += moving;
+				moving = 100;
+				temp2 = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
+				if (moving > temp) moving = temp;
+				totaltime += moving;
+			}
 		}
-		totaltime += moving;
 	}
 	return totaltime;
 }
@@ -118,11 +146,11 @@ int DowTotDist()
 	}
 	return Dtotaltime;
 }
-int SrcDistCal(int dowi, int periodi, int dowf, int periodf) // SA 이웃해 용 거리계산
+int SrcDistCal(int dowi, int periodi, int dowf, int periodf)
 {
 	int i, j, k, moving, temp;
 	int stuInfo;
-	int howmansub, howmanstu, whichsmall;
+	int howmansub = 0, howmanstu = 0, whichsmall;
 	int howmuctime[60] = { 0 };
 	int totaltime = 0;
 	vector<int> student_list;
@@ -135,21 +163,42 @@ int SrcDistCal(int dowi, int periodi, int dowf, int periodf) // SA 이웃해 용 거�
 	vector<position> initial_position;
 	vector<position> final_position;
 	vector<position> stair_location;
-	howmansub = group[timeTableSrc[dowi][periodi]].subject.size();
+	stair_location[0].x = 0; stair_location[0].y = 0;
+	stair_location[1].x = 5; stair_location[1].y = 1;
+	stair_location[1].x = -7; stair_location[1].y = 1;
+	stair_location[1].x = -3; stair_location[1].y = 5;
+	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
+	for (i = 0; i < 2; i++)
+	{
+		howmansub += group[timeTableSrc[dowi][periodi][i].subject.size();
+	}
 	for (i = 0; i < howmansub; i++)
 	{
-		howmanstu = group[timeTableSrc[dowi][periodi]].subject[i].student.size();
+		for (j = 0; j < 2; j++)
+		{
+			howmanstu += group[timeTableSrc[dowi][periodi]].subject[i].student.size();
+		}
 		whichsmall = howmanstu;
 		for (j = 0; j < howmanstu; j++)
 		{
-			stuInfo = group[timeTableSrc[dowi][periodi]].subject[i].student[j];
-			iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			for (k = 0; k < 2; k++)
+			{
+				stuInfo = group[timeTableSrc[dowi][periodi][k].subject[i].student[j];
+				iniclass_student.push_back(stuInfo);//요일의 어떤 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			}
 		}
-		howmanstu = group[timeTableSrc[dowf][periodf]].subject[i].student.size();
+		howmanstu = 0;//학생 수 초기화
+		for (j = 0; j < 2; j++)
+		{
+			howmanstu += group[timeTableSrc[dowf][periodf][k].subject[i].student.size();
+		}
 		for (j = 0; j < howmanstu; j++)
 		{
-			stuInfo = group[timeTableSrc[dowf][periodf]].subject[i].student[j];
-			finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			for (k = 0; k < 2; k++)
+			{
+				stuInfo = group[timeTableSrc[dowf][periodf][k]].subject[i].student[j];
+				finclass_student.push_back(stuInfo);//요일의 그 다음 교시에 있는 수업에 참여하는 학생들을 리스트에 정리해 넣음
+			}
 		}
 		if (whichsmall < howmanstu) howmanstu = whichsmall;
 		//만약 그 다음 교시 수업에 참여하는 학생들이 이전 수업 학생 수보다 적다면 이전 수업 학생들의 다음 시간이 공강이라는 뜻이므로 그 학생들은 계산에 넣지 않기 위함
@@ -163,29 +212,31 @@ int SrcDistCal(int dowi, int periodi, int dowf, int periodf) // SA 이웃해 용 거�
 				}
 			}
 		}//어떤 시간과 그 다음 시간 모두 수업을 듣는 학생들만 추려서 리스트에 정리해 넣음
-		initial_position[i].floor = group[timeTableSrc[dowi][periodi]].subject[i].floor;
-		initial_position[i].x = group[timeTableSrc[dowi][periodi]].subject[i].x;
-		initial_position[i].y = group[timeTableSrc[dowi][periodi]].subject[i].y;//학생들의 초기 위치 저장 
-		final_position[i].floor = group[timeTableSrc[dowf][periodf]].subject[i].floor;
-		final_position[i].x = group[timeTableSrc[dowf][periodf]].subject[i].x;
-		final_position[i].y = group[timeTableSrc[dowf][periodf]].subject[i].y;//학생들의 이동 위치 저장 
 	}
-	stair_location[0].x = 0; stair_location[0].y = 0;
-	stair_location[1].x = 5; stair_location[1].y = 1;
-	stair_location[1].x = -7; stair_location[1].y = 1;
-	stair_location[1].x = -3; stair_location[1].y = 5;
-	stair_location[1].x = -2; stair_location[1].y = -4;//초기 계단 위치 설정
 	for (i = 0; i < student_list.size(); i++)
 	{
-		totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
-		moving = 100;
-		for (i = 0; i < 5; i++)
+		for (j = 0; j < 2; j++)
 		{
-			temp = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
-			temp = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
-			if (moving > temp) moving = temp;
+
+			initial_position[i].floor = subjectData[grpTable[dowi][periodi][j]].floor
+				initial_position[i].x = subjectData[grpTable[dowi][periodi][j]].x;
+			initial_position[i].y = subjectData[grpTable[dowi][periodi][j]].y;//학생들의 초기 위치 저장 
+			final_position[i].floor = subjectData[timeTableSrc[dowf][periodf][j]].floor;
+			final_position[i].x = subjectData[grpTable[dowf][periodf][j]].x;
+			final_position[i].y = subjectData[grpTable[dowf][periodf][j]].y;//학생들의 이동 위치 저장 
+			totaltime += (initial_position[i].floor - final_position[i].floor) * 5;//층간 이동 가중치는 5
+			moving = 100;
+			for (l = 0; l < 5; l++)
+			{
+				temp1 = abs(stair_location[i].x - initial_position[i].x) + abs(stair_location[i].y - initial_position[i].y);
+				if (moving > temp) moving = temp;
+				totaltime += moving;
+				moving = 100;
+				temp2 = abs(stair_location[i].x - final_position[i].x) + abs(stair_location[i].y - final_position[i].y);
+				if (moving > temp) moving = temp;
+				totaltime += moving;
+			}
 		}
-		totaltime += moving;
 	}
 	return totaltime;
 }
@@ -696,21 +747,21 @@ int subFit()
 		for (int j = 0, j < 5; j++)
 		{
 			if (subTable[i][0][0][j] != -1)
-				initTea1.push(subjectData[subTable[i][0][0][j]].teacher);
+				initTea1.push_back(subjectData[subTable[i][0][0][j]].teacher);
 			if (subTable[i][0][1][j] != -1)
-				initTea1.push(subjectData[subTable[i][0][1][j]].teacher);
+				initTea1.push_back(subjectData[subTable[i][0][1][j]].teacher);
 			if (subTable[i][8][0][j] != -1)
-				initTea9.push(subjectData[subTable[i][8][0][j]].teacher);
+				initTea9.push_back(subjectData[subTable[i][8][0][j]].teacher);
 			if (subTable[i][8][1][j] != -1)
-				initTea9.push(subjectData[subTable[i][8][1][j]].teacher);
+				initTea9.push_back(subjectData[subTable[i][8][1][j]].teacher);
 			if (subTable[i + 1][0][0][j] != -1)
-				finTea1.push(subjectData[subTable[i + 1][0][0][j]].teacher);
+				finTea1.push_back(subjectData[subTable[i + 1][0][0][j]].teacher);
 			if (subTable[i + 1][0][1][j] != -1)
-				finTea1.push(subjectData[subTable[i + 1][0][1][j]].teacher);
+				finTea1.push_back(subjectData[subTable[i + 1][0][1][j]].teacher);
 			if (subTable[i + 1][8][0][j] != -1)
-				finTea9.push(subjectData[subTable[i + 1][8][0][j]].teacher);
+				finTea9.push_back(subjectData[subTable[i + 1][8][0][j]].teacher);
 			if (subTable[i + 1][8][1][j] != -1)
-				finTea9.push(subjectData[subTable[i + 1][8][1][j]].teacher);
+				finTea9.push_back(subjectData[subTable[i + 1][8][1][j]].teacher);
 		}
 		for (int i = 0; i < initTea1.size(); i++)
 		{
@@ -787,6 +838,13 @@ int main()
 			timeTable[i][j][1] = -1;
 			timeTableSrc[i][j][0] = -1;
 			timeTableSrc[i][j][1] = -1;
+		}
+	}
+	for (int i = 0; i < group.size(); i++)
+	{
+		for (int j = 0; j < group[i].subject.size(); j++)
+		{
+			group[i].subject[j].grade = group[i].grade;
 		}
 	}
 	for (int i = 0; i < 5; i++) // Random Tabling
@@ -899,18 +957,37 @@ int main()
 			}
 		}
 	}
-	printf("1차 Simulated Annealing Done!");
-	for (int i = 0; i < 5; i++)
+	printf("Level 1 Simulated Annealing Done!");
+	for (int i = 0; i < 5; i++) // 수업시간 구조체 벡터를 선언
 	{
 		for (int j = 0; j < 9; j++)
 		{
-			for (int k = 0; k < group[timeTable[i][j][0].subject.size()]; k++)
+			for (int k = 0; k < group[timeTable[i][j][0]].subject.size(); k++)
 			{
-				subTable[i][j][0][k] = group[timeTable[i][j][0]].subject[k];
+				time[group[timeTable[i][j][0]]].subject[k].subcode].push_back({ i,j,0 });
 			}
-			for (int k = 0; k < group[timeTable[i][j][1].subject.size()]; k++)
+			for (int k = 0; k < group[timeTable[i][j][1]].subject.size(); k++)
 			{
-				subTable[i][j][0][1] = group[timeTable[i][j][1]].subject[k];
+				time[group[timeTable[i][j][1]]].subject[k].subcode].push_back({ i,j,0 });
+				
+			}
+		}
+	}
+	for (int i = 0; i < subjectData[i].size(); i++) // 과목 무작위 할당
+	{
+		int randTime, subTime; currentTime = 0;
+		subTime = subjectData[i].time;
+		while (currentTime < subTime)
+		{
+			randTime = rand % ()subTime;
+			if (time[i][randTime].select == 0)
+			{
+				subTable[time[i].day][time[i].period][subjectData[i].grade - 2].push_back(i);
+				currentTime++;
+			}
+			else
+			{
+				continue;
 			}
 		}
 	}
