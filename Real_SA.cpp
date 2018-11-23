@@ -15,7 +15,7 @@ typedef struct subjectbase
 {
 	vector<int> student;
 	int subcode, floor, x, time, y, grade;
-	vector <int> teacher;
+	int teacher;
 	int sequent; // 연강 시간
 }subjectBase;
 typedef struct groupbase
@@ -302,7 +302,7 @@ int FitnessCal() // 시간표의 적합도 합산 계산
 	}
 	totDist = DowTotDist();
 	fitness = totDist + period1Seq * 100 + period9Seq * 100;
-
+	return fitness;
 }
 int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
 {
@@ -352,6 +352,7 @@ int SrcFitnessCal() // 이웃해 시간표의 적합도 합산 계산
 	}
 	totDist = SrcDowTotDist();
 	fitness = totDist + period1Seq * 100 + period9Seq * 100;
+	return fitness;
 }
 
 int GrpDuplicate(int grp1, int grp2) // 두 그룹이 같은 시간에 수업이 가능한지 판단! ( 교사 / 학생 / 교실 중복여부 판단 ) Able:1 Disable:-1
@@ -930,7 +931,11 @@ int main()
 				randPrd2 = rand() % 9;
 				randGrd = rand() % 2;
 			} while (randDay1 != randDay2 || randPrd1 != randPrd2);
-			swap = timeTableSrc[randDay1][randPrd1][randGrd];
+			if (GrpAbleTime(timeTable[randDay1][randPrd1][randGrd], randDay2, randDay2) == -1) // 각 그룹을 이동했을때 수업이 가능한지 계산
+				continue;
+			if (GrpAbleTime(timeTable[randDay2][randPrd2][randGrd], randDay1, randDay1) == -1) 
+				continue;
+			swap = timeTableSrc[randDay1][randPrd1][randGrd]; //가능하면 두 교시를 바꾼 후 적합도 계산
 			timeTableSrc[randDay1][randPrd1][randGrd] = timeTableSrc[randDay2][randPrd2][randGrd];
 			timeTableSrc[randDay2][randPrd2][randGrd] = swap;
 			crtFit = FitnessCal();
@@ -939,6 +944,7 @@ int main()
 			if (fitDiff <= 0)
 			{
 				memcpy(timeTable, timeTableSrc, sizeof(timeTableSrc));
+				looped++;
 				continue;
 			}
 			else
@@ -948,11 +954,13 @@ int main()
 				if (exp((float)((-fitDiff) / (tem))) >= random)
 				{
 					memcpy(timeTable, timeTableSrc, sizeof(timeTableSrc));
+					looped++;
 					continue;
 				}
 				else 
 				{
 					memcpy(timeTableSrc, timeTable, sizeof(timeTable));
+					looped++; // 넣야하나 빼야하나
 				}
 			}
 		}
@@ -993,7 +1001,7 @@ int main()
 	}
 	for (tem = 1; tem >= tFin; t *= temDec)
 	{
-
+		
 	}
 	for (int i = 0; i < 9; i++)
 	{
